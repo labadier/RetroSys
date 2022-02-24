@@ -1,5 +1,6 @@
 from params import params
 import xml.etree.ElementTree 
+import pandas as pd
 
 values = []
 
@@ -36,14 +37,12 @@ def get_products():
   for child in tree[0]:
     df['id'].append(child.attrib['id'])
 
-  df['id'] = df['id'][:10]###
-
   print('Fetching Products Data')
   perc = 0
   for index, i in enumerate(df['id']):
-    if index/len(df['id']) - perc >= 1:
+    if index/len(df['id']) - perc >= 0.01:
       perc = index/len(df['id'])
-      print(f'\r{perc*100}% Fetched', end = "")
+      print(f'\r{perc*100:.2f}% Fetched', end = "")
 
     try:
       tree = prestashop.get('products',  resource_id=i)
@@ -53,14 +52,15 @@ def get_products():
       continue
 
     for j in depth_attribute.keys():
-      node = getChildDataByName('categories', tree, [])
+      node = getChildDataByName(j, tree, [])
       if node[0] == False:
         df[j].append(None)
       else:
         getChildsInfo(node[1], 0, depth_attribute[j])
         if j != 'categories':
           df[j].append(values[0])
-        else: df[j].append(values.copy())
+        else: df[j].append(';'.join(values))
         values.clear()
-    print('\n')
-  return df
+  print(f'\r100% Fetched')
+  df = pd.DataFrame(df)
+  df.to_csv('data/products.csv')
