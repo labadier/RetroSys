@@ -7,6 +7,7 @@ class params:
 
   WEBSERVICE_KEY = 'D2YF2A9Z2DI38ZCJRKGXWBIN27Q6TTKZ'
 
+  date_featrues = ['birthday']
   COLS = ['ced_newsletter_subs', 'ced_bill_post_code', #'ced_last_products', 
     'ced_products', 
     'ced_avg_order_value', 'ced_last_order_date', 'ced_avg_days_bt_orders', 'gender', 'age', 'lang', 'interests', 'personality', 

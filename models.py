@@ -38,8 +38,6 @@ class RecSys:
     for name, type, criteria in zip(params.COLS, params.type, params.criteria):
       file.write(f'{name} dsoodion.frequentSimilarPatternMining.features.{type} dsoodion.frequentSimilarPatternMining.similarityFunctions.{criteria}\n')
 
-
-
   def getFrequentPatterns(self):
     os.system(f'java -jar STreeDCMiner.jar data/ input.data data/prueba0511/persona.names out {self.base_tresh} -1 -1')
     
