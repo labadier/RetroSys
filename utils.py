@@ -32,7 +32,7 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
   prestashop = PrestaShopWebService('https://h-dsieblamalaga.com/api', params.WEBSERVICE_KEY)
   tree = prestashop.get(resource)
   
-  df['id'] = [child.attrib['id'] for child in tree[0]]
+  df['id'] = [child.attrib['id'] for child in tree[0][:99]]
 
   date_features = dict()
   for i in depth_attribute:
@@ -52,7 +52,11 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
       tree = prestashop.get(resource_details,  resource_id=i)
     except:
       for j in depth_attribute.keys():
-        df[j].append(None)
+        if df[j] == 'date':
+          df[j].append(None)
+        else:
+          for prop in ['year', 'month', 'day']:
+            date_features[f'{j}.{prop}'].append(None)
       continue
 
     for j in depth_attribute.keys():
