@@ -9,7 +9,7 @@ class RecSys:
 
   def __init__(self, data, products_cols):
 
-      self.data = pd.read_csv('data/transaction.csv',usecols=params.COLS)
+      self.data = pd.read_csv('data/transaction.csv',usecols=params.profiling_cols)
       self.product_frequency = None
       self.base_tresh = None
       self.products_cols = products_cols
@@ -30,12 +30,12 @@ class RecSys:
       base_thresh = min(base_thresh, self.product_frequency[i])
 
   def buildInputFile(self, name):
-    self.data = self.data.apply(lambda x: x.astype(str).str.lower()).set_index([ i for i in params.COLS if i not in self.products_cols]).apply(lambda x: x.str.split(';').explode()).reset_index()    
+    self.data = self.data.apply(lambda x: x.astype(str).str.lower()).set_index([ i for i in params.profiling_cols if i not in self.products_cols]).apply(lambda x: x.str.split(';').explode()).reset_index()    
 
     with open(f'{name}.names', 'w') as file:
       file.write('dsoodion.frequentSimilarPatternMining.similarityFunctions.IdentitySimilarityFunction\n\n')
 
-    for name, type, criteria in zip(params.COLS, params.type, params.criteria):
+    for name, type, criteria in zip(params.profiling_cols, params.type, params.criteria):
       file.write(f'{name} dsoodion.frequentSimilarPatternMining.features.{type} dsoodion.frequentSimilarPatternMining.similarityFunctions.{criteria}\n')
 
   def getFrequentPatterns(self):
@@ -55,16 +55,16 @@ class RecSys:
 
 # # products_cols = ['ced_last_products', 'ced_products']
 # products_cols = ['ced_products']
-# data = pd.read_csv('data/transaction.csv',usecols=params.COLS).fillna(-1).astype(str)
+# data = pd.read_csv('data/transaction.csv',usecols=params.profiling_cols).fillna(-1).astype(str)
 
 # # produse = pd.concat([data[i].str.split(';', expand=True) for i in products_cols], axis=1).fillna(-1).astype(str)
-# data = data.apply(lambda x: x.astype(str).str.lower()).set_index([ i for i in params.COLS if i not in products_cols]).apply(lambda x: x.str.split(';').explode()).reset_index()    
+# data = data.apply(lambda x: x.astype(str).str.lower()).set_index([ i for i in params.profiling_cols if i not in products_cols]).apply(lambda x: x.str.split(';').explode()).reset_index()    
 # #%%
 # name = 'interactions'
 # with open(f'{name}.names', 'w') as file:
 #   file.write('dsoodion.frequentSimilarPatternMining.similarityFunctions.IdentitySimilarityFunction\n\n')
 
-#   for name, type, criteria in zip(params.COLS, params.type, params.criteria):
+#   for name, type, criteria in zip(params.profiling_cols, params.type, params.criteria):
 #     file.write(f'{name} dsoodion.frequentSimilarPatternMining.features.{type} dsoodion.frequentSimilarPatternMining.similarityFunctions.{criteria}\n')
 # #%%
 # #%%

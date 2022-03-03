@@ -8,22 +8,22 @@ class params:
   WEBSERVICE_KEY = 'D2YF2A9Z2DI38ZCJRKGXWBIN27Q6TTKZ'
 
   date_featrues = ['birthday']
-  COLS = ['ced_newsletter_subs', 'ced_bill_post_code', #'ced_last_products', 
-    'ced_products', 
-    'ced_avg_order_value', 'ced_last_order_date', 'ced_avg_days_bt_orders', 'gender', 'age', 'lang', 'interests', 'personality', 
-    'values_h', 'needs', 'openness', 'conscientiousness', 'extraversion',
-    'agreeableness', 'neuroticism']
+  profiling_cols = ['fan_value', "neuroticism", "agreeableness", "extraversion", "conscientiousness",
+         "openness", "personality", "values_h", "needs", "interests"]
 
-  type = ['CategoricalFeature', 'IntegerFeature',  'CategoricalFeature', 
-    'IntegerFeature', 'IntegerFeature', 'IntegerFeature', 'CategoricalFeature', 'IntegerFeature', 'CategoricalFeature', 'CategoricalFeature', 
-    'CategoricalFeature', 'CategoricalFeature', 'IntegerFeature', 'IntegerFeature', 'IntegerFeature', 'IntegerFeature',
-    'IntegerFeature', 'IntegerFeature']
+  # mining_cols = ['fan_value', 'neuroticism', 'agreeableness', 'extraversion', 'conscientiousness', 'openness', 
+  #      'personality', 'values_h', 'needs',
+  #      'ach', 'ben', 'con', 'dir', 'hed', 'pow', 'sec', 'sti',
+  #      'tra', 'uni', 'cha', 'clo', 'cur', 'est', 'exc', 'exp', 'har', 'ide',
+  #      'lib', 'lov', 'pra', 'str', 'id_gender', 'is_guest', 'birthday.year',
+  #      'birthday.month']
 
-  criteria = ['IdentityComparationCriteria', 'IdentityComparationCriteria', 'IdentityComparationCriteria', 
-    'NeighborhoodComparationCriteria 3', 'IdentityComparationCriteria', 'NeighborhoodComparationCriteria 3', 
-    'IdentityComparationCriteria', 'NeighborhoodComparationCriteria 2', 'IdentityComparationCriteria', 
-    'IdentityComparationCriteria', 'IdentityComparationCriteria', 'IdentityComparationCriteria',
-    'NeighborhoodComparationCriteria 3', 'NeighborhoodComparationCriteria 3', 'NeighborhoodComparationCriteria 3', 
-    'NeighborhoodComparationCriteria 3', 'NeighborhoodComparationCriteria 3', 'NeighborhoodComparationCriteria 3']
+  # type = ['IntegerFeature']*6 + ['CategoricalFeature']*3 + ['IntegerFeature']*22 + ['CategoricalFeature']*4
 
-#'ced_categories', 'ced_last_categories'
+
+  mining_cols = ['fan_value', 'neuroticism', 'agreeableness', 'extraversion', 'conscientiousness', 'openness', 
+      'personality', 'values_h', 'needs', 'id_gender', 'is_guest', 'birthday_year', 'birthday_month']
+  mining_type = ['CategoricalFeature'] + ['IntegerFeature']*5 + ['CategoricalFeature']*5 + ['IntegerFeature']*2
+
+  mining_criteria = ['IdentityComparationCriteria'] + ['IdentityComparationCriteria']*5 + ['IdentityComparationCriteria']*5\
+                    +['IdentityComparationCriteria 1', 'IdentityComparationCriteria 5']
