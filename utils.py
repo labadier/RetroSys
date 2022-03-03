@@ -34,7 +34,7 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
   prestashop = PrestaShopWebService('https://h-dsieblamalaga.com/api', params.WEBSERVICE_KEY)
   tree = prestashop.get(resource)
   
-  df['id'] = [child.attrib['id'] for child in tree[0][:99]]
+  df['id'] = [child.attrib['id'] for child in tree[0]]
 
   date_features = dict()
   for i in depth_attribute:
@@ -109,7 +109,7 @@ def get_profiling(step=2):
         needs = [(x['label'], x['count']) for x in json.loads(data['fields']['core']['all_values']['value'])['needs_all']];needs.sort()
         spamwriter.writerow([data["id"]] + [data["fields"]["core"][field]["value"] for field in params.profiling_cols] + \
                               [item[1] for item in values] +  [item[1] for item in needs])
-      break
+
 
   
 def build_products_association(index = 5167697, threshold = 0.3):
@@ -220,7 +220,7 @@ def compute_segments( index, threshold = 0.6):
         head |= (line == "Frequent SubDescriptions: " )
 
   return segments
-  
+
 def get_products():
   df = {'id':[], 'categories':[], 'name':[], 'price':[], 'type':[], 'accessories':[]}
   depth_attribute = {'categories':2, 'name':1, 'price':0, 'type':0, 'accessories':2}

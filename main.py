@@ -9,9 +9,9 @@ import xml.etree.ElementTree
 import json
 import os
 
-get_products()
-get_customers()
-get_orders()
-get_categories()
-get_profiling()
+# get_products()
+# get_customers()
+# get_orders()
+# get_categories()
+get_profiling(step=100)
 # %%
