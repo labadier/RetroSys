@@ -106,7 +106,7 @@ def get_profiling(step=2):
         break
 
       contacts_data = contacts_data.values()
-      index += step
+      index += len(contacts_data)
       print(f'\r{index} contacts fetched', end = "")
       for data in contacts_data:
         values = [(x['label'], x['count']) for x in json.loads(data['fields']['core']['all_values']['value'])['values_all']];values.sort()
@@ -116,10 +116,11 @@ def get_profiling(step=2):
 
 
   
-def build_products_association(index = 5167697, threshold = 0.3):
+def build_products_association(index, threshold):
 
   df = pd.read_csv('data/products.csv')
   product = df[df['id'] == index]
+  
   if not len(product):
     return []
   assosiations = list(map(int, (product.iloc[0]['accessories'] if product['accessories'].isnull().values.any() == False else '-1').split(';')))
@@ -131,8 +132,8 @@ def build_products_association(index = 5167697, threshold = 0.3):
     assosiations += list(map(int, (category.iloc[0]['products'] if category['products'].isnull().values.any() == False else '-1').split(';')))
   assosiations = set(assosiations) 
 
-  data = pd.read_csv('data/orders.csv',usecols=['order_rows'])
-  data = data[data['order_rows'].str.contains(f';{index}|{index};')]['order_rows'].str.split(';', expand=True).fillna(-1).astype(str)
+  data = pd.read_csv('data/orders.csv',usecols=['order_rows']).fillna(-1).astype(str)
+  data = data[data['order_rows'].str.contains(f';{index}|{index};')]['order_rows'].str.split(';', expand=True)
 
   frequencies = {}
   for i in data.iloc:
@@ -171,27 +172,25 @@ def build_products_association(index = 5167697, threshold = 0.3):
   #     if patterns and line.count(f'{index}=1') and line.count('=1') > 1:
   #       assosiations |= set([int(x[:-2]) for x in line.split(" ")[:-3] if x.count("=1") and x != f'{index}=1'])
   #     patterns |= (not patterns and line == "Frequent SubDescriptions: \n")      
-  assosiations.remove(-1)
-  assosiations.remove(index)
+  assosiations.difference({-1, index})
   return assosiations
 
-def compute_segments( index, threshold = 0.6):
+def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
   
-  associations = [index] + build_products_association(index)
+  associations = [index] + list(build_products_association(index, product_assosiation))
 
-  data = pd.read_csv('data/orders.csv',usecols=['id_customer', 'order_rows'])
+  data = pd.read_csv('data/orders.csv',usecols=['id_customer', 'order_rows'], dtype=str).fillna('-1')
   data_entries = []
   for entry in associations:
     data_entries += data[data['order_rows'].str.contains(f';{entry}|{entry};')]['id_customer'].to_list()
 
   data_entries_set = list(set(data_entries))
-
-  data = pd.read_csv('data/perfilado.csv')
+  data = pd.read_csv('data/perfilado.csv',dtype=str)
   psycologyc_data = data[data['id'].isin(data_entries_set)] 
-  data = pd.read_csv('data/customers.csv',usecols=['id', 'id_gender', 'is_guest', 'birthday_year','birthday_month'],dtype=str)
-  data["id"] = data["id"].astype(int)
-  data = pd.merge(psycologyc_data, data[data['id'].isin(data_entries_set)])[["id"] + params.mining_cols]
 
+  data = pd.read_csv('data/customers.csv',usecols=['id', 'id_gender', 'is_guest', 'birthday_year','birthday_month'],dtype=str).fillna('-1')
+  data = pd.merge(psycologyc_data, data[data['id'].isin(data_entries_set)])[["id"] + params.mining_cols]
+  
   with open(f'data/data.names', 'w') as file:
     file.write('dsoodion.frequentSimilarPatternMining.similarityFunctions.IdentitySimilarityFunction\n')
     for token, type, criteria in zip(params.mining_cols, params.mining_type, params.mining_criteria):
@@ -199,8 +198,9 @@ def compute_segments( index, threshold = 0.6):
 
   with open(f'data/data.data', 'w') as file :
     for entry in data_entries:
-      z = "\t".join(data[data["id"] == entry].iloc[0].astype(str).to_list()[1:])
-      file.write(f'{z} \n')
+      if len(data[data["id"] == entry]):
+        z = "\t".join(data[data["id"] == entry].iloc[0].astype(str).to_list()[1:])
+        file.write(f'{z} \n')
       
   os.system(f'java -jar tools/STreeDCMiner.jar data/ data.data data.names out {threshold} -1 -1')
 

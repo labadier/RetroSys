@@ -1,17 +1,39 @@
 #%%
-from utils import get_products, get_customers, build_products_association
-from file_read_backwards import FileReadBackwards
+from utils import get_products, get_customers, compute_segments
 from utils import get_orders, get_categories, get_profiling
-from params import params
-import pandas as pd, numpy as np
-import itertools
-import xml.etree.ElementTree 
-import json
-import os
+import argparse, sys
 
-# get_products()
-# get_customers()
-# get_orders()
-# get_categories()
-get_profiling(step=200)
+
+def check_params(args=None):
+  parser = argparse.ArgumentParser(description='Language Model Encoder')
+  
+  parser.add_argument('-i', metavar='index', type=int, help='Product index to find segment for')
+  parser.add_argument('-tr', metavar='thresh_rules', type=float, default = 0.2, help='Threshold for Support on Rules Mining ranginng in (0, 1]')
+  parser.add_argument('-ta', metavar='thresh_asoci', type=float, default = 0.6, help='Threshold for Co-occurency on buying objects')
+  parser.add_argument('-mode', metavar='mode', default='mine', help='Mode either mining segments or download data', choices=['mine', 'fetch'])
+  
+  return parser.parse_args(args)
+
+if __name__ == '__main__':
+
+
+  parameters = check_params(sys.argv[1:])
+
+  tr = parameters.tr
+  ta = parameters.tr
+  mode = parameters.mode
+  index = parameters.i
+
+  if mode == 'mine':
+    segments = compute_segments( index, threshold = tr, product_assosiation=ta)
+    for i in segments:
+      print(i)
+
+  if mode == 'fetch':
+    get_orders()
+    get_categories()
+    get_profiling()
+    get_products()
+    get_customers()
+
 # %%
