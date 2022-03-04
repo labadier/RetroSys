@@ -101,11 +101,13 @@ def get_profiling(step=2):
     index = 0
     print("Fetching Profiling Data")
     while True:
-      contacts_data =  contacts.get_list(search="segment:contactos-perfilados", start=index, limit=step, order_by="firstname")["contacts"].values()
-      index += step
-      print(f'\r{index} contacts fetched', end = "")
+      contacts_data =  contacts.get_list(search="segment:contactos-perfilados", start=index, limit=step, order_by="firstname")["contacts"]
       if not len(contacts_data):
         break
+
+      contacts_data = contacts_data.values()
+      index += step
+      print(f'\r{index} contacts fetched', end = "")
       for data in contacts_data:
         values = [(x['label'], x['count']) for x in json.loads(data['fields']['core']['all_values']['value'])['values_all']];values.sort()
         needs = [(x['label'], x['count']) for x in json.loads(data['fields']['core']['all_values']['value'])['needs_all']];needs.sort()
