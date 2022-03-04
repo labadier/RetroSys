@@ -13,5 +13,5 @@ import os
 # get_customers()
 # get_orders()
 # get_categories()
-get_profiling(step=100)
+get_profiling(step=200)
 # %%

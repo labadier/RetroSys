@@ -102,6 +102,8 @@ def get_profiling(step=2):
     print("Fetching Profiling Data")
     while True:
       contacts_data =  contacts.get_list(search="segment:contactos-perfilados", start=index, limit=step, order_by="firstname")["contacts"].values()
+      index += step
+      print(f'\r{index} contacts fetched', end = "")
       if not len(contacts_data):
         break
       for data in contacts_data:
