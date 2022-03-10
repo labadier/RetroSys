@@ -1,6 +1,6 @@
 #%%
 from utils import get_products, get_customers, compute_segments
-from utils import get_orders, get_categories, get_profiling
+from utils import get_orders, get_categories, get_profiling, log_mining
 import argparse, sys
 
 
@@ -20,20 +20,21 @@ if __name__ == '__main__':
   parameters = check_params(sys.argv[1:])
 
   tr = parameters.tr
-  ta = parameters.tr
+  ta = parameters.ta
   mode = parameters.mode
   index = parameters.i
 
   if mode == 'mine':
-    segments = compute_segments( index, threshold = tr, product_assosiation=ta)
+    segments, association, entries = compute_segments( index, threshold = tr, product_assosiation=ta)
     for i in segments:
       print(i)
+    # log_mining(index, segments, association, entries, tr, ta)
 
   if mode == 'fetch':
-    get_orders()
-    get_categories()
-    get_profiling()
+    # get_orders()
+    # get_categories()
+    # get_profiling()
     get_products()
-    get_customers()
+    # get_customers()
 
 # %%

@@ -3,3 +3,6 @@ data/perfilados.zip
 data/STreeDCMiner.zip
 data/data.zip
 __pycache__
+log*
+test.py
+data/data*

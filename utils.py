@@ -1,3 +1,4 @@
+from html import entities
 from params import params
 import xml.etree.ElementTree 
 import pandas as pd, numpy as np
@@ -116,7 +117,7 @@ def get_profiling(step=2):
 
 
   
-def build_products_association(index, threshold):
+def build_products_association(index, a_threshold):
 
   df = pd.read_csv('data/products.csv')
   product = df[df['id'] == index]
@@ -128,6 +129,8 @@ def build_products_association(index, threshold):
 
   df = pd.read_csv('data/categories.csv')
   for i in categories:
+    if i == 1:
+      continue
     category = df[df['id'] == i]
     assosiations += list(map(int, (category.iloc[0]['products'] if category['products'].isnull().values.any() == False else '-1').split(';')))
   assosiations = set(assosiations) 
@@ -142,7 +145,7 @@ def build_products_association(index, threshold):
         frequencies[j] = 1
       else: frequencies[j] += 1
 
-  assosiations |= set([i for i in frequencies if frequencies[i]/len(data) >= threshold])
+  assosiations |= set([i for i in frequencies if frequencies[i]/len(data) >= a_threshold])
 
   # print(data)
   # tokens = list(set(itertools.chain.from_iterable([data[i].to_list() for i in data.columns])))
@@ -176,15 +179,17 @@ def build_products_association(index, threshold):
   return assosiations
 
 def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
-  
-  associations = [index] + list(build_products_association(index, product_assosiation))
 
+  associations = [index] + list(build_products_association(index, product_assosiation))
+  
   data = pd.read_csv('data/orders.csv',usecols=['id_customer', 'order_rows'], dtype=str).fillna('-1')
   data_entries = []
   for entry in associations:
-    data_entries += data[data['order_rows'].str.contains(f';{entry}|{entry};')]['id_customer'].to_list()
-
+    if entry is not None:
+      data_entries += data[data['order_rows'].str.contains(f';{entry}|{entry};')]['id_customer'].to_list()
+  
   data_entries_set = list(set(data_entries))
+ 
   data = pd.read_csv('data/perfilado.csv',dtype=str)
   psycologyc_data = data[data['id'].isin(data_entries_set)] 
 
@@ -201,7 +206,7 @@ def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
       if len(data[data["id"] == entry]):
         z = "\t".join(data[data["id"] == entry].iloc[0].astype(str).to_list()[1:])
         file.write(f'{z} \n')
-      
+  print(f'Data entries for mining: {len(data_entries)}')
   os.system(f'java -jar tools/STreeDCMiner.jar data/ data.data data.names out {threshold} -1 -1')
 
   segments = []
@@ -223,11 +228,29 @@ def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
         foot &= not (line == "")
         head |= (line == "Frequent SubDescriptions: " )
 
-  return segments
+  return segments, associations, len(data_entries)
+
+def log_mining(index, segments, associations, entries, tr, ta):
+
+  with open('log.txt', 'a') as file:
+    
+    file.write( f'{"*"*5}  {index}  {"*"*5}\tminimun-support: {tr}\tminimun-coocurrence frequency: {ta}\n\n')
+    df = pd.read_csv('data/products.csv')
+    file.write(f"{df[df['id'] == index].iloc[0]['name']}\n\n{'*'*5}  Associations  {'*'*5}\n\n")
+  
+    # for i in associations:
+    #   if i is not None:
+    #     file.write(f"{i}\t{df[df['id'] == int(i)].iloc[0]['name']}\n")
+
+    file.write( f"\n\n{'*'*5}  Entries for mining: {entries} {'*'*5}\n\n{'*'*5}  Segments  {'*'*5}")
+
+    for i in segments:
+      file.write(f'{i}\n')
+    file.write('\n')
 
 def get_products():
-  df = {'id':[], 'categories':[], 'name':[], 'price':[], 'type':[], 'accessories':[]}
-  depth_attribute = {'categories':2, 'name':1, 'price':0, 'type':0, 'accessories':2}
+  df = {'id':[], 'categories':[], 'name':[], 'price':[], 'type':[], 'accessories':[], 'description':[], 'description_short':[]}
+  depth_attribute = {'categories':2, 'name':1, 'price':0, 'type':0, 'accessories':2,  'description':1, 'description_short':1}
   get_data('products', df, depth_attribute, resource_details='products')
 
 def get_customers():
