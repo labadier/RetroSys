@@ -10,7 +10,7 @@ class params:
   date_featrues = ['birthday']
   profiling_cols = ['fan_value', "neuroticism", "agreeableness", "extraversion", "conscientiousness",
          "openness", "personality", "values_h", "needs", "interests"]
-
+  langaugeModel = {"ES": "dccuchile/bert-base-spanish-wwm-cased", "EN": "vinai/bertweet-base"} # TODO  change bertweet for bert-base
   # mining_cols = ['fan_value', 'neuroticism', 'agreeableness', 'extraversion', 'conscientiousness', 'openness', 
   #      'personality', 'values_h', 'needs',
   #      'ach', 'ben', 'con', 'dir', 'hed', 'pow', 'sec', 'sti',

@@ -1,6 +1,6 @@
 #%%
 from utils import get_products, get_customers, compute_segments
-from utils import get_orders, get_categories, get_profiling, log_mining
+from utils import get_orders, get_categories, get_profiling
 import argparse, sys
 
 
@@ -31,10 +31,26 @@ if __name__ == '__main__':
     # log_mining(index, segments, association, entries, tr, ta)
 
   if mode == 'fetch':
-    # get_orders()
-    # get_categories()
-    # get_profiling()
+    get_orders()
+    get_categories()
+    get_profiling(step=100)
     get_products()
-    # get_customers()
+    get_customers()
 
+# %%
+from models import Encoder
+
+model = Encoder(weigths_source='offline')
+descriptions = model.encode(csv_file='data/products.csv')
+# %%
+import pandas as pd
+import html2text
+batch = pd.read_csv('data/products.csv', dtype=str).fillna('-1')
+
+
+batch['description'] = pd.DataFrame.apply(batch, lambda row: html2text.html2text(row['description']).replace('*', '') if row['description'] != '-1' else html2text.html2text(row['description_short']).replace('*', ''), axis=1)
+
+
+idx = [2, 3]
+batch = batch.loc[idx, ['id', 'description', 'description_short']]
 # %%

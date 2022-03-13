@@ -6,3 +6,5 @@ __pycache__
 log*
 test.py
 data/data*
+data/vinai
+products_*

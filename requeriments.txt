@@ -2,3 +2,4 @@ prestapyt
 pandas
 mautic
 file-read-backwards
+html2text

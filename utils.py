@@ -88,7 +88,7 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
   df.to_csv(f'data/{resource}.csv')
 
 
-def get_profiling(step=2):
+def get_profiling(step=2) -> None:
 
   from mautic import MauticBasicAuthClient, Contacts
   import csv
@@ -117,7 +117,7 @@ def get_profiling(step=2):
 
 
   
-def build_products_association(index, a_threshold):
+def build_products_association(index, a_threshold, mark_co=False) -> tuple:
 
   df = pd.read_csv('data/products.csv')
   product = df[df['id'] == index]
@@ -145,40 +145,16 @@ def build_products_association(index, a_threshold):
         frequencies[j] = 1
       else: frequencies[j] += 1
 
-  assosiations |= set([i for i in frequencies if frequencies[i]/len(data) >= a_threshold])
-
-  # print(data)
-  # tokens = list(set(itertools.chain.from_iterable([data[i].to_list() for i in data.columns])))
-  # tokens = {x:y for y, x in enumerate(tokens)}
-
-  # with open(f'data/data.names', 'w') as file:
-  #   file.write('dsoodion.frequentSimilarPatternMining.similarityFunctions.IdentitySimilarityFunction\n')
-
-  #   for token in tokens.keys():
-  #     file.write(f'{token} dsoodion.frequentSimilarPatternMining.features.IntegerFeature dsoodion.frequentSimilarPatternMining.similarityFunctions.IdentityComparationCriteria\n')
-
-  # with open(f'data/data.data', 'w') as file:
-  #   for i in data.iloc:
-  #     z = np.zeros(len(tokens), dtype=int)
-  #     z[[tokens[x] for x in i.to_list()]] = 1
-  #     z = '\t'.join(z.astype(str))
-  #     file.write(f'{z}\n')
+  assosiations_by_co = set([i for i in frequencies if frequencies[i]/len(data) >= a_threshold])
+  assosiations |= assosiations_by_co
   
-  # os.system(f'java -jar tools/STreeDCMiner.jar data/ data.data data.names out {threshold} -1 -1')
-      
-  # with open(f'data/data.data.data.namesout.STreeDCMiner_{threshold}_-1__-1', 'r') as file:
-
-  #   patterns = False
-  #   for i, line in enumerate(file):
-  #     patterns ^= (patterns and line == "\n")
-
-  #     if patterns and line.count(f'{index}=1') and line.count('=1') > 1:
-  #       assosiations |= set([int(x[:-2]) for x in line.split(" ")[:-3] if x.count("=1") and x != f'{index}=1'])
-  #     patterns |= (not patterns and line == "Frequent SubDescriptions: \n")      
+  
   assosiations.difference({-1, index})
-  return assosiations
+  if mark_co == True:
+    return assosiations, assosiations_by_co
+  else: return assosiations
 
-def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
+def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ) -> tuple:
 
   associations = [index] + list(build_products_association(index, product_assosiation))
   
@@ -229,24 +205,6 @@ def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ):
         head |= (line == "Frequent SubDescriptions: " )
 
   return segments, associations, len(data_entries)
-
-def log_mining(index, segments, associations, entries, tr, ta):
-
-  with open('log.txt', 'a') as file:
-    
-    file.write( f'{"*"*5}  {index}  {"*"*5}\tminimun-support: {tr}\tminimun-coocurrence frequency: {ta}\n\n')
-    df = pd.read_csv('data/products.csv')
-    file.write(f"{df[df['id'] == index].iloc[0]['name']}\n\n{'*'*5}  Associations  {'*'*5}\n\n")
-  
-    # for i in associations:
-    #   if i is not None:
-    #     file.write(f"{i}\t{df[df['id'] == int(i)].iloc[0]['name']}\n")
-
-    file.write( f"\n\n{'*'*5}  Entries for mining: {entries} {'*'*5}\n\n{'*'*5}  Segments  {'*'*5}")
-
-    for i in segments:
-      file.write(f'{i}\n')
-    file.write('\n')
 
 def get_products():
   df = {'id':[], 'categories':[], 'name':[], 'price':[], 'type':[], 'accessories':[], 'description':[], 'description_short':[]}
