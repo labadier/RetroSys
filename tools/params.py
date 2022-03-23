@@ -22,8 +22,8 @@ class params:
 
 
   mining_cols = ['fan_value', 'neuroticism', 'agreeableness', 'extraversion', 'conscientiousness', 'openness', 
-      'personality', 'values_h', 'needs', 'id_gender', 'is_guest', 'birthday_year', 'birthday_month']
+      'personality', 'values_h', 'needs', 'id_gender', 'is_guest', 'birthday_year']
   mining_type = ['CategoricalFeature'] + ['IntegerFeature']*5 + ['CategoricalFeature']*5 + ['IntegerFeature']*2
 
   mining_criteria = ['IdentityComparationCriteria'] + ['IdentityComparationCriteria']*5 + ['IdentityComparationCriteria']*5\
-                    +['IdentityComparationCriteria 1', 'IdentityComparationCriteria 5']
+                    +['NeighborhoodComparationCriteria 2']

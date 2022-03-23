@@ -1,5 +1,5 @@
 from html import entities
-from params import params
+from tools.params import params
 import xml.etree.ElementTree 
 import pandas as pd, numpy as np
 import itertools, os
@@ -116,7 +116,28 @@ def get_profiling(step=2) -> None:
                               [item[1] for item in values] +  [item[1] for item in needs])
 
 
-  
+def create_semantic_prelations(item, topChuncSize = 10, weigthsSourcing='offline'):
+
+  from models.models import Encoder
+  import csv
+  from sklearn.metrics.pairwise import cosine_similarity
+   
+  model = Encoder(weigths_source=weigthsSourcing)
+  descriptions = model.encode(csv_file='data/products.csv')
+  ids = list(descriptions.keys())
+  del model
+
+  index = ids.index(f'{item}')
+  F = [descriptions[i] for i in ids]
+  F = cosine_similarity(np.expand_dims(F[index], 0), np.array(F))
+
+  top = [(F[0][j], ids[j]) for j in range(F.shape[1]) if index != j]
+  top.sort(reverse = True)
+  top = top[:topChuncSize]
+
+  return [i[1] for i in top if i[0] > 0.9]
+
+
 def build_products_association(index, a_threshold, mark_co=False) -> tuple:
 
   df = pd.read_csv('data/products.csv')
@@ -156,8 +177,7 @@ def build_products_association(index, a_threshold, mark_co=False) -> tuple:
 
 def compute_segments( index, threshold = 0.6, product_assosiation = 0.3 ) -> tuple:
 
-  associations = [index] + list(build_products_association(index, product_assosiation))
-  
+  associations = list(set([index] + list(build_products_association(index, product_assosiation)) + create_semantic_prelations(index)))
   data = pd.read_csv('data/orders.csv',usecols=['id_customer', 'order_rows'], dtype=str).fillna('-1')
   data_entries = []
   for entry in associations:

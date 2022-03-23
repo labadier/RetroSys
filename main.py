@@ -1,7 +1,11 @@
 #%%
-from utils import get_products, get_customers, compute_segments
-from utils import get_orders, get_categories, get_profiling
-import argparse, sys
+
+import pandas
+from tools.params import params
+from tools.utils import get_products, get_customers, compute_segments
+from tools.utils import get_orders, get_categories, get_profiling
+import argparse, sys, json, datetime
+
 
 
 def check_params(args=None):
@@ -26,8 +30,29 @@ if __name__ == '__main__':
 
   if mode == 'mine':
     segments, association, entries = compute_segments( index, threshold = tr, product_assosiation=ta)
+    
+    json_out = []
+    for pattern in segments:
+      json_out.append([])
+      for feature in pattern:
+        feature = feature.split('=')
+        feature_id = params.mining_cols.index(feature[0])
+        if params.mining_criteria[feature_id].split()[0] == 'NeighborhoodComparationCriteria':
+          json_out[-1].append({'name':feature[0], 'operator': '>', 'field':int(feature[0]),
+          'filter':max(0, datetime.date.today().year - int(feature[1]) - 1 - int(params.mining_criteria[feature_id].split()[1])),
+          'type': "number"})
+          json_out[-1].append({'name':feature[0], 'operator': '<', 'field':int(feature[0]), 
+          'filter':datetime.date.today().year - int(feature[1]) + 1 + int(params.mining_criteria[feature_id].split()[1]),
+          'type': "number"})
+        else: json_out[-1].append({'name':feature[0], 'operator': '=', 'field':feature[0],
+          'type': 'select' if params.mining_type[feature_id] == "CategoricalFeature" else "number", 
+          'filter': feature[1]})
+
+    with open('output.json', 'w') as file:
+      file.write(json.dumps(json_out))
+  
     for i in segments:
-      print(i)
+        print(i)
     # log_mining(index, segments, association, entries, tr, ta)
 
   if mode == 'fetch':
@@ -36,21 +61,3 @@ if __name__ == '__main__':
     get_profiling(step=100)
     get_products()
     get_customers()
-
-# %%
-from models import Encoder
-
-model = Encoder(weigths_source='offline')
-descriptions = model.encode(csv_file='data/products.csv')
-# %%
-import pandas as pd
-import html2text
-batch = pd.read_csv('data/products.csv', dtype=str).fillna('-1')
-
-
-batch['description'] = pd.DataFrame.apply(batch, lambda row: html2text.html2text(row['description']).replace('*', '') if row['description'] != '-1' else html2text.html2text(row['description_short']).replace('*', ''), axis=1)
-
-
-idx = [2, 3]
-batch = batch.loc[idx, ['id', 'description', 'description_short']]
-# %%
