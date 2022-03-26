@@ -51,7 +51,7 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
     try:
       tree = prestashop.get(resource_details,  resource_id=i)
     except:
-      print('Cart not fetched: {i}')
+      print(f'Cart not fetched: {i} with string {resource_details}/{i}')
       for j in depth_attribute.keys():
         if df[j] != 'date':
           df[j].append(None)
@@ -271,5 +271,5 @@ def get_carts():
   target = {'cart_rows': 'id_product'}
   depth_attribute = { 'id_customer':0, 'date_add':0, 'date_upd':0, 'cart_rows':2}
 
-  get_data('carts', df, depth_attribute, resource_details='orders', target=target)
+  get_data('carts', df, depth_attribute, resource_details='carts', target=target)
 

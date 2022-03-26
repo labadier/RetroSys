@@ -1,3 +1,6 @@
+from tools.utils import get_carts
+get_carts()
+exit(0)
 # #%% segments by hyperparameters
 # import pandas as pd
 # import numpy as np
@@ -58,9 +61,6 @@ import xml.etree.ElementTree
 #     for j in top:
 #       spamwriter.writerow([ids[i],iname, j[0], data[data['id'] == int(j[1])].iloc[0]['name']])
 
-from tools.utils import get_carts
-get_carts()
-exit(0)
 # %%
 from tools.params import params
 from prestapyt import PrestaShopWebService
@@ -96,7 +96,7 @@ import xml.etree.ElementTree
 
 prestashop = PrestaShopWebService('https://h-dsieblamalaga.com/api', params.WEBSERVICE_KEY)
 
-tree = prestashop.get('carts/58986')
+tree = prestashop.search('carts/1')
 # %%
 from tools.utils import getChildDataByName
 
