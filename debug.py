@@ -2,7 +2,7 @@
 # import pandas as pd
 # import numpy as np
 # from tools.utils import compute_segments, build_products_association
-
+import xml.etree.ElementTree 
 # index = 93606835
 # ta = 0.1
 
@@ -57,22 +57,69 @@
 
 #     for j in top:
 #       spamwriter.writerow([ids[i],iname, j[0], data[data['id'] == int(j[1])].iloc[0]['name']])
+
+from tools.utils import get_carts
+get_carts()
+exit(0)
 # %%
-
-from tools.utils import *
-
-df = {'id':[], 'id_customer':[], 'cart_rows':[], 'date_add':[], 'date_upd':[]}
-target = {'cart_rows': 'product_id'}
-depth_attribute = { 'id_customer':0, 'date_add':0, 'date_upd':0, 'cart_rows':2}
-
-get_data('carts', df, depth_attribute, resource_details='orders', target=target)
-
-# # %%
-# from tools.params import params
-# from prestapyt import PrestaShopWebService
+from tools.params import params
+from prestapyt import PrestaShopWebService
+import pandas as pd, csv
+from datetime import datetime
 
 # prestashop = PrestaShopWebService('https://h-dsieblamalaga.com/api', params.WEBSERVICE_KEY)
-# # tree = prestashop.get(resource)
+
+
 # # %%
-# z = prestashop.search('carts', options={'filter[id]': '[1|5]'})
-# # %%
+
+threshold = 0.3
+carts = pd.read_csv('data/abandoned_carts.csv', dtype=str).fillna('-1')
+
+freq = dict()
+for i in range(len(carts)):
+  p = carts.iloc[i]["items"].split(';')
+  for j in p:
+    for k in p:
+      if j == k:
+        freq[[j]] = 1 if [j] not in freq.keys() else freq[[j]] + 1
+      else: freq[sorted([j, k])] = 1 if sorted([j, k]) not in freq.keys() else freq[sorted([j, k])] + 1 
+
+p = [(freq[i], i) for i in freq.keys() if freq[i] >= len(carts)*threshold ]
+# %%
+
+from torch import threshold
+from tools.params import params
+from prestapyt import PrestaShopWebService
+import pandas as pd, csv
+from datetime import datetime
+import xml.etree.ElementTree 
+
+prestashop = PrestaShopWebService('https://h-dsieblamalaga.com/api', params.WEBSERVICE_KEY)
+
+tree = prestashop.get('carts/58986')
+# %%
+from tools.utils import getChildDataByName
+
+values = []
+
+def getChildsInfo(node, level, depth, target = None):
+
+  if level == depth and (target == None or node.tag == target):
+    values.append(node.text)
+    return
+
+  for i in node:
+    getChildsInfo(i, level+1, depth, target)
+
+df = {'id':[], 'id_customer':[], 'cart_rows':[], 'date_add':[], 'date_upd':[]}
+target = {'cart_rows': 'id_product'}
+depth_attribute = { 'id_customer':0, 'date_add':0, 'date_upd':0, 'cart_rows':2}
+
+for j in depth_attribute.keys():
+  node = getChildDataByName(j, tree, [])
+  print(node[0])
+  getChildsInfo(node[1], 0, depth_attribute[j], (target[j] if j in target.keys() else None))
+  print(j, values)
+  values = []
+
+# %%

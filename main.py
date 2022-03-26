@@ -3,7 +3,7 @@
 import pandas
 from tools.params import params
 from tools.utils import get_products, get_customers, compute_segments
-from tools.utils import get_orders, get_categories, get_profiling
+from tools.utils import get_orders, get_categories, getProfiling
 import argparse, sys, json, datetime
 
 
@@ -58,6 +58,6 @@ if __name__ == '__main__':
   if mode == 'fetch':
     get_orders()
     get_categories()
-    get_profiling(step=100)
+    getProfiling(step=100)
     get_products()
     get_customers()

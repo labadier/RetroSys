@@ -1,8 +1,5 @@
-from html import entities
 from tools.params import params
-import xml.etree.ElementTree 
-import pandas as pd, numpy as np
-import itertools, os
+import pandas as pd, numpy as n, csv, os
 from file_read_backwards import FileReadBackwards
 import json
 
@@ -54,6 +51,7 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
     try:
       tree = prestashop.get(resource_details,  resource_id=i)
     except:
+      print('Cart not fetched: {i}')
       for j in depth_attribute.keys():
         if df[j] != 'date':
           df[j].append(None)
@@ -88,10 +86,9 @@ def get_data(resource, df, depth_attribute, resource_details, target = {}):
   df.to_csv(f'data/{resource}.csv')
 
 
-def get_profiling(step=2) -> None:
+def getProfiling(step=2) -> None:
 
   from mautic import MauticBasicAuthClient, Contacts
-  import csv
   mautic = MauticBasicAuthClient('https://harley.identiaicdp.com/', 'rafael', "Rafael*12345")
   contacts = Contacts(client=mautic)
 
@@ -115,11 +112,33 @@ def get_profiling(step=2) -> None:
         spamwriter.writerow([data["id"]] + [data["fields"]["core"][field]["value"] for field in params.profiling_cols] + \
                               [item[1] for item in values] +  [item[1] for item in needs])
 
+def getAbandonedCars(lower_bound = "01-01-2021", upper_boud = "01-07-2021") -> None:
+  from datetime import datetime
+
+  lower_bound = datetime.strptime(lower_bound, "%d-%m-%Y")
+  upper_boud = datetime.strptime(upper_boud, "%d-%m-%Y")
+
+  carts = pd.read_csv('data/carts.csv', dtype=str).fillna('-1')
+  orders = pd.read_csv('data/orders.csv', dtype=str)
+
+
+  with open('data/abandoned_carts.csv', 'wt', newline='', encoding="utf-8") as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow(["items", "id_customer"])
+      
+    for i in range(len(carts)):
+      
+      if carts.iloc[i]['date_upd'] != '-1' and datetime.strptime(carts.iloc[i]['date_upd'], "%Y-%m-%d %H:%M:%S") >= lower_bound and\
+            datetime.strptime(carts.iloc[i]['date_upd'], "%Y-%m-%d %H:%M:%S") <= upper_boud and\
+            not len(orders[orders['id_cart'] == carts.iloc[i]['id']]):
+        
+        spamwriter.writerow([carts.iloc[i]['cart_rows'], carts.iloc[i]['id_customer']])
+
 
 def create_semantic_prelations(item, topChuncSize = 10, weigthsSourcing='offline'):
 
   from models.models import Encoder
-  import csv
+  import numpy as np
   from sklearn.metrics.pairwise import cosine_similarity
    
   model = Encoder(weigths_source=weigthsSourcing)
@@ -246,3 +265,11 @@ def get_categories():
   df = {'id':[], 'products':[]}
   depth_attribute = {'products':2}
   get_data('categories', df, depth_attribute, resource_details='categories')
+
+def get_carts():
+  df = {'id':[], 'id_customer':[], 'cart_rows':[], 'date_add':[], 'date_upd':[]}
+  target = {'cart_rows': 'id_product'}
+  depth_attribute = { 'id_customer':0, 'date_add':0, 'date_upd':0, 'cart_rows':2}
+
+  get_data('carts', df, depth_attribute, resource_details='orders', target=target)
+
